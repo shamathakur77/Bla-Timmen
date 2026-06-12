@@ -275,7 +275,7 @@ body::before{
 
   <div class="foot">
     Built for Stockholm, by someone who lives here.<br>
-    Real places · real ratings · live event links<br>
+    Real places · real ratings · live event links<br><span style="font-size:9px;opacity:.5">v4 · 29 places · jun 2026</span><br>
     <a href="https://ko-fi.com/shamathakur">support this →</a>
   </div>
 </div>
@@ -545,32 +545,73 @@ function renderFavs(){
 /* ============================================================
    UPGRADE 4 · SHAREABLE CARD (renders a poster, downloads PNG)
    ============================================================ */
+function wrapText(ctx,text,x,y,maxW,lh){
+  const words=text.split(' ');let line='';let yy=y;
+  for(let i=0;i<words.length;i++){
+    const test=line+words[i]+' ';
+    if(ctx.measureText(test).width>maxW && i>0){ctx.fillText(line.trim(),x,yy);line=words[i]+' ';yy+=lh;}
+    else line=test;
+  }
+  ctx.fillText(line.trim(),x,yy);return yy;
+}
 function shareCard(key){
   tactile(620);
   const p=P[key];
-  let stage=document.getElementById('sharestage');
-  if(!stage){stage=document.createElement('div');stage.id='sharestage';document.body.appendChild(stage);}
-  stage.innerHTML=`
-    <div class="sc-brand">BLÅ TIMMEN</div>
-    <div class="sc-loc">STOCKHOLM · 59.33°N</div>
-    <div class="sc-pick">tonight, go here</div>
-    <div class="sc-name">${p.n}</div>
-    <div class="sc-why">${p.why}</div>
-    <div class="sc-tags">${p.tags.map(t=>`<span class="sc-tag">${t}</span>`).join('')}<span class="sc-tag">${p.r}★</span></div>
-    <div class="sc-foot">bla-timmen.vercel.app · pick a mood, get a place</div>`;
-  if(window.html2canvas){
-    html2canvas(stage,{backgroundColor:null,scale:2}).then(canvas=>{
-      canvas.toBlob(b=>{
-        const url=URL.createObjectURL(b);
-        const a=document.createElement('a');a.href=url;a.download='bla-timmen-'+key+'.png';a.click();
-        setTimeout(()=>URL.revokeObjectURL(url),3000);
-      });
-    });
-  }else{
-    alert('Card ready to share: '+p.n+' — '+p.why);
-  }
+  const W=1080,H=1350;                 // 4:5, perfect for IG/WhatsApp
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const x=cv.getContext('2d');
+  // bg gradient (blue hour)
+  const g=x.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#11161f');g.addColorStop(1,'#0a0e14');
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  // ambient glow
+  const rg=x.createRadialGradient(W*0.75,H*0.1,0,W*0.75,H*0.1,700);
+  rg.addColorStop(0,'rgba(91,154,150,0.18)');rg.addColorStop(1,'rgba(91,154,150,0)');
+  x.fillStyle=rg;x.fillRect(0,0,W,H);
+  const pad=96;
+  // brand
+  x.fillStyle='#e0a951';x.font='600 52px Georgia,serif';x.fillText('BLÅ TIMMEN',pad,140);
+  x.fillStyle='#5b9a96';x.font='26px monospace';x.fillText('STOCKHOLM · 59.33°N',pad,182);
+  // pick label
+  x.fillStyle='#5b9a96';x.font='26px monospace';x.fillText('T O N I G H T ,   G O   H E R E',pad,400);
+  // name (wrap)
+  x.fillStyle='#f0ede4';x.font='600 96px Georgia,serif';
+  let yy=wrapText(x,p.n,pad,500,W-pad*2,104);
+  // why (wrap, lighter)
+  x.fillStyle='#c5cad3';x.font='36px Georgia,serif';
+  yy=wrapText(x,p.why,pad,yy+90,W-pad*2,52);
+  // tags as pills
+  let tx=pad;const ty=yy+90;const tags=[...p.tags,p.r+'★'];
+  x.font='26px monospace';
+  tags.forEach(t=>{
+    const w=x.measureText(t).width+44;
+    if(tx+w>W-pad){tx=pad;}
+    x.strokeStyle='rgba(224,169,81,0.3)';x.lineWidth=1.5;
+    x.beginPath();x.roundRect(tx,ty,w,52,12);x.stroke();
+    x.fillStyle='#5b9a96';x.fillText(t,tx+22,ty+34);
+    tx+=w+16;
+  });
+  // footer
+  x.fillStyle='#8b94a3';x.font='26px monospace';
+  x.fillText('bla-timmen.vercel.app · pick a mood, get a place',pad,H-90);
+  // gold hairline
+  x.strokeStyle='#e0a951';x.globalAlpha=0.4;x.lineWidth=2;
+  x.beginPath();x.moveTo(pad,H-140);x.lineTo(W-pad,H-140);x.stroke();x.globalAlpha=1;
+
+  cv.toBlob(async (blob)=>{
+    const file=new File([blob],'bla-timmen-'+key+'.png',{type:'image/png'});
+    // Web Share API (mobile: shares straight to WhatsApp/IG)
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file],title:'BLÅ TIMMEN',text:'Tonight: '+p.n}); return; }
+      catch(e){ /* user cancelled — fall through to download */ }
+    }
+    // fallback: download
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='bla-timmen-'+key+'.png';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+  },'image/png');
 }
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
