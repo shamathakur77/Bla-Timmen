@@ -89,7 +89,11 @@ body::before{
   margin-bottom:14px;
 }
 @keyframes rise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
-.answer .head{padding:18px 18px 4px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.answer .visual{width:100%;height:160px;position:relative;overflow:hidden;background:var(--ink3)}
+.answer .visual img{width:100%;height:100%;object-fit:cover;display:block}
+.answer .visual .ill{position:absolute;inset:0;width:100%;height:100%}
+.answer .visual::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,var(--ink3) 2%,transparent 55%)}
+.answer .head{padding:14px 18px 4px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .answer .pick{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--teal);text-transform:uppercase;margin-bottom:6px}
 .answer h3{font-family:'Fraunces',serif;font-size:24px;font-weight:600;line-height:1.05}
 .answer .rt{font-family:'Space Mono',monospace;font-size:13px;color:var(--gold);white-space:nowrap;padding-top:18px}
@@ -128,8 +132,12 @@ body::before{
 .panel.open{display:block}
 .row{
   display:flex;justify-content:space-between;align-items:center;gap:12px;
-  padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer;
+  padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer;
 }
+.row .thumb{width:52px;height:52px;border-radius:11px;overflow:hidden;flex-shrink:0;background:var(--ink3);position:relative}
+.row .thumb img{width:100%;height:100%;object-fit:cover}
+.row .thumb .ill{position:absolute;inset:0}
+.row .lwrap{flex:1;display:flex;align-items:center;gap:12px;min-width:0}
 .row:active{opacity:.6}
 .row .l .rn{font-family:'Fraunces',serif;font-size:16px;font-weight:500}
 .row .l .rm{font-size:11px;color:var(--mute);margin-top:3px}
@@ -156,6 +164,7 @@ body::before{
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .sheetinner{background:linear-gradient(170deg,var(--ink3),var(--ink2));border-top:1px solid var(--gold);border-radius:22px 22px 0 0;width:100%;max-width:560px;margin:0 auto;padding:22px 20px 30px;animation:slideup .4s cubic-bezier(.2,.9,.3,1.1)}
 @keyframes slideup{from{transform:translateY(100%)}to{transform:none}}
+.sheetinner .visual{height:140px;border-radius:14px;overflow:hidden}
 .sheetinner h3{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:4px}
 .sheetinner .sr{font-family:'Space Mono',monospace;font-size:12px;color:var(--gold);margin-bottom:14px}
 .sheetinner p{font-size:13px;color:var(--bone);line-height:1.6;margin-bottom:8px}
@@ -237,40 +246,57 @@ body::before{
 <script>
 /* ---------- DATA: real Stockholm places ---------- */
 const P = {
-  lillaego:{n:"Lilla Ego",r:"4.7",pl:3,map:"https://maps.google.com/?cid=ref",pid:"ChIJ3x_sRnCdX0YRp4dr2VnNLpU",q:"Lilla Ego Stockholm",
+  lillaego:{n:"Lilla Ego",kind:"dining",photo:"https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&q=70",r:"4.7",pl:3,map:"https://maps.google.com/?cid=ref",pid:"ChIJ3x_sRnCdX0YRp4dr2VnNLpU",q:"Lilla Ego Stockholm",
     why:"Nordic small-plates with a warm open kitchen. The reindeer is the order. Worth the wait, no reservations after 6.",tags:["nordic","date","cosy","€€€"],hours:"Tue–Sat 17–23"},
-  adamalbin:{n:"Adam/Albin",r:"4.8",pl:4,pid:"ChIJKdaIv2mdX0YR9RuQJ2s4kME",q:"Adam Albin Stockholm",
+  adamalbin:{n:"Adam/Albin",kind:"fine",photo:"https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=70",r:"4.8",pl:4,pid:"ChIJKdaIv2mdX0YR9RuQJ2s4kME",q:"Adam Albin Stockholm",
     why:"Michelin tasting menu, every course lands. The kind of night you plan around. Book ahead.",tags:["michelin","special","tasting","€€€€"],hours:"Mon–Sat from 18"},
-  aifur:{n:"Aifur",r:"4.6",pl:3,pid:"ChIJcS-P4OJ3X0YR-u4PvFqTv7E",q:"Aifur Stockholm Gamla Stan",
+  aifur:{n:"Aifur",kind:"feast",photo:"https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=600&q=70",r:"4.6",pl:3,pid:"ChIJcS-P4OJ3X0YR-u4PvFqTv7E",q:"Aifur Stockholm Gamla Stan",
     why:"A full Viking feast hall, candlelit, live music, mead in goblets. Theatrical and genuinely fun. Book a week out.",tags:["experience","groups","viking","€€€"],hours:"from 17, closed Sun"},
-  florentine:{n:"Florentine",r:"4.5",pl:3,pid:"ChIJn-A9sUN3X0YRNZPCmeaBCbI",q:"Florentine Italian Stockholm",
+  florentine:{n:"Florentine",kind:"italian",photo:"https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=70",r:"4.5",pl:3,pid:"ChIJn-A9sUN3X0YRNZPCmeaBCbI",q:"Florentine Italian Stockholm",
     why:"Söder's loud, warm Italian. Burrata, truffle pasta, honey pizza. Eclectic room, fast buzz, easy with a group.",tags:["italian","alive","groups","€€€"],hours:"daily, late Fri–Sat"},
-  gastabud:{n:"Stockholms Gästabud",r:"4.7",pl:2,pid:"ChIJm8qsClidX0YR0H6OcH7SycU",q:"Stockholms Gastabud",
+  gastabud:{n:"Stockholms Gästabud",kind:"dining",photo:"https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=600&q=70",r:"4.7",pl:2,pid:"ChIJm8qsClidX0YR0H6OcH7SycU",q:"Stockholms Gastabud",
     why:"Cosy Gamla Stan room, classic Swedish. Meatballs without pork, fair prices, no rush. Expect a short wait.",tags:["swedish","family","cosy","€€"],hours:"daily 12–22"},
-  lillagast:{n:"Lilla Gästabud",r:"4.9",pl:2,pid:"ChIJTeX1Sbh3X0YRyoMZ3vmWu3s",q:"Lilla Gastabud Stockholm",
+  lillagast:{n:"Lilla Gästabud",kind:"dining",photo:"https://images.unsplash.com/photo-1592861956120-e524fc739696?w=600&q=70",r:"4.9",pl:2,pid:"ChIJTeX1Sbh3X0YRyoMZ3vmWu3s",q:"Lilla Gastabud Stockholm",
     why:"The little sister, 4.9 stars and mostly locals. Best mash in the city, reindeer meatballs, tiny room.",tags:["swedish","cult","intimate","€€"],hours:"daily 12–22"},
-  moms:{n:"Mom's Kitchen",r:"4.6",pl:1,pid:"ChIJw1BH3kSdX0YRFgriJnGWOGs",q:"Moms Kitchen Nybrogatan Stockholm",
+  moms:{n:"Mom's Kitchen",kind:"comfort",photo:"https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=600&q=70",r:"4.6",pl:1,pid:"ChIJw1BH3kSdX0YRFgriJnGWOGs",q:"Moms Kitchen Nybrogatan Stockholm",
     why:"Östermalm comfort food at honest prices. Homestyle, fast, warm. A weekday-lunch hug. Limited seating.",tags:["comfort","budget","family","€"],hours:"Mon–Fri 11–19"},
-  kajsas:{n:"Kajsas Fisk",r:"4.6",pl:2,pid:"ChIJt-rFEV-dX0YRkfr1r9LtGGk",q:"Kajsas Fisk Hotorgshallen",
+  kajsas:{n:"Kajsas Fisk",kind:"seafood",photo:"https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=600&q=70",r:"4.6",pl:2,pid:"ChIJt-rFEV-dX0YRkfr1r9LtGGk",q:"Kajsas Fisk Hotorgshallen",
     why:"Refillable fish soup in a market basement. Free bread and salad, locals-only energy, cheap and brilliant.",tags:["seafood","budget","local","€€"],hours:"Mon–Sat, lunch"},
-  slingerbulten:{n:"Slingerbulten",r:"4.6",pl:2,pid:"ChIJH28eReJ3X0YRw3-NsSo_ey4",q:"Slingerbulten Stockholm",
+  slingerbulten:{n:"Slingerbulten",kind:"dining",photo:"https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600&q=70",r:"4.6",pl:2,pid:"ChIJH28eReJ3X0YRw3-NsSo_ey4",q:"Slingerbulten Stockholm",
     why:"Gamla Stan, grandma's-cooking meatballs, chill room, fair price. Reserve for Friday nights.",tags:["swedish","cosy","family","€€"],hours:"daily, lunch+dinner"},
-  fikawine:{n:"Fika & Wine",r:"4.8",pl:2,pid:"ChIJo6uVujadX0YRa3r6Rv2zcTQ",q:"Fika and Wine Osterlanggatan",
+  fikawine:{n:"Fika & Wine",kind:"dining",photo:"https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=70",r:"4.8",pl:2,pid:"ChIJo6uVujadX0YRa3r6Rv2zcTQ",q:"Fika and Wine Osterlanggatan",
     why:"Best beef meatballs in Old Town, cosy and romantic, house wine that works. Vegetarian meatballs too.",tags:["swedish","date","cosy","€€"],hours:"daily till 22:30"},
-  komet:{n:"Komet Café",r:"4.8",pl:1,pid:"ChIJBwNs-JCdX0YRicHpUj-fLgA",q:"Komet Cafe Kungsholmsgatan",
+  komet:{n:"Komet Café",kind:"cafe",photo:"https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&q=70",r:"4.8",pl:1,pid:"ChIJBwNs-JCdX0YRicHpUj-fLgA",q:"Komet Cafe Kungsholmsgatan",
     why:"60s Scandi room, free-refill filter coffee, cardamom buns that ruin you for others. The fika standard.",tags:["fika","budget","calm","€"],hours:"daily from 7"},
-  kometsoder:{n:"Komet Café Södermalm",r:"4.9",pl:1,pid:"ChIJDYPEmQ13X0YRbKkubhupAZo",q:"Komet Cafe Sodermalm Tavastgatan",
+  kometsoder:{n:"Komet Café Södermalm",kind:"cafe",photo:"https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=600&q=70",r:"4.9",pl:1,pid:"ChIJDYPEmQ13X0YRbKkubhupAZo",q:"Komet Cafe Sodermalm Tavastgatan",
     why:"4.9 stars, hidden, riverside walk to get there. Pistachio bun is the move. Quiet, one lovely host.",tags:["fika","cult","calm","€"],hours:"daily from 8"},
-  pascal:{n:"Café Pascal",r:"4.5",pl:2,pid:"ChIJy8mqQ_d3X0YRTsBt6D4db8E",q:"Cafe Pascal Norrtullsgatan",
+  pascal:{n:"Café Pascal",kind:"cafe",photo:"https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=70",r:"4.5",pl:2,pid:"ChIJy8mqQ_d3X0YRTsBt6D4db8E",q:"Cafe Pascal Norrtullsgatan",
     why:"Stockholm's benchmark fika. Pistachio croissant, proper espresso, always a queue for a reason.",tags:["fika","calm","classic","€€"],hours:"daily from 7"},
-  barninja:{n:"Bar Ninja",r:"4.6",pl:2,pid:"ChIJ55bdqad3X0YReI-S764RwPk",q:"Bar Ninja Katarina Bangata Stockholm",
+  barninja:{n:"Bar Ninja",kind:"wine",photo:"https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=70",r:"4.6",pl:2,pid:"ChIJ55bdqad3X0YReI-S764RwPk",q:"Bar Ninja Katarina Bangata Stockholm",
     why:"Exactly what a local wine bar should be. Natural pours, chill staff who guide you, great snacks.",tags:["wine","date","alive","€€"],hours:"Tue–Sat from 16"},
-  nofo:{n:"NOFO Wine Bar",r:"4.5",pl:2,pid:"ChIJ7z5rZI93X0YRvIPYUZpuoFE",q:"NOFO Wine Bar Sodermalm",
+  nofo:{n:"NOFO Wine Bar",kind:"wine",photo:"https://images.unsplash.com/photo-1470158499416-75be9aa0c4db?w=600&q=70",r:"4.5",pl:2,pid:"ChIJ7z5rZI93X0YRvIPYUZpuoFE",q:"NOFO Wine Bar Sodermalm",
     why:"Cosy courtyard hideaway, interesting list, perfect small plates. Pricey snacks but the vibe earns it.",tags:["wine","cosy","date","€€"],hours:"daily from 15"},
-  bodega:{n:"Hornstulls Bodega",r:"4.5",pl:2,pid:"ChIJifRNWMR3X0YRciE1CsESUL8",q:"Hornstulls Bodega Stockholm",
+  bodega:{n:"Hornstulls Bodega",kind:"wine",photo:"https://images.unsplash.com/photo-1467189386127-77c50488b16d?w=600&q=70",r:"4.5",pl:2,pid:"ChIJifRNWMR3X0YRciE1CsESUL8",q:"Hornstulls Bodega Stockholm",
     why:"The city's most addictive natural-wine room, run by two sommeliers who move among the tables. Twin Peaks energy.",tags:["wine","cult","alive","€€"],hours:"daily, late Fri–Sat"},
 };
 function mapUrl(p){return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(p.q)+"&query_place_id="+p.pid;}
+
+/* ---------- illustrated fallbacks (blue-hour palette, never break) ---------- */
+const ILL={
+  dining:`<rect width="100" height="100" fill="#1a212c"/><circle cx="50" cy="46" r="22" fill="none" stroke="#e0a951" stroke-width="1.5" opacity=".7"/><path d="M50 30v32M40 38c0 6 4 8 4 8M60 38c0 6-4 8-4 8" stroke="#e0a951" stroke-width="1.5" opacity=".7"/><circle cx="50" cy="46" r="9" fill="#5b9a96" opacity=".4"/>`,
+  fine:`<rect width="100" height="100" fill="#1a212c"/><path d="M50 22l5 14h-10z" fill="#e0a951" opacity=".8"/><circle cx="50" cy="52" r="16" fill="none" stroke="#e0a951" stroke-width="1.5" opacity=".7"/><path d="M44 52h12M50 46v12" stroke="#5b9a96" stroke-width="1.5" opacity=".6"/>`,
+  feast:`<rect width="100" height="100" fill="#1a212c"/><path d="M30 60c0-14 9-24 20-24s20 10 20 24z" fill="none" stroke="#e0a951" stroke-width="1.5" opacity=".7"/><path d="M50 36V24M44 28l6-6 6 6" stroke="#c97b5a" stroke-width="1.5" opacity=".8"/><path d="M34 60h32" stroke="#5b9a96" stroke-width="2" opacity=".5"/>`,
+  italian:`<rect width="100" height="100" fill="#1a212c"/><circle cx="50" cy="50" r="20" fill="none" stroke="#e0a951" stroke-width="1.5" opacity=".7"/><circle cx="44" cy="46" r="2.5" fill="#c97b5a"/><circle cx="56" cy="48" r="2.5" fill="#c97b5a"/><circle cx="50" cy="56" r="2.5" fill="#5b9a96"/><circle cx="54" cy="42" r="2" fill="#5b9a96"/>`,
+  comfort:`<rect width="100" height="100" fill="#1a212c"/><path d="M34 54c0-9 7-16 16-16s16 7 16 16" fill="none" stroke="#e0a951" stroke-width="1.5" opacity=".7"/><path d="M40 42c0-4 2-6 2-6M50 40c0-4 2-6 2-6M60 42c0-4 2-6 2-6" stroke="#c97b5a" stroke-width="1.5" opacity=".7"/><path d="M30 54h40" stroke="#5b9a96" stroke-width="2" opacity=".5"/>`,
+  seafood:`<rect width="100" height="100" fill="#1a212c"/><path d="M34 50c6-10 20-12 28-4-8 8-22 6-28 4z" fill="none" stroke="#e0a951" stroke-width="1.5" opacity=".7"/><path d="M62 46l8-4v12l-8-4" fill="none" stroke="#e0a951" stroke-width="1.5" opacity=".7"/><circle cx="42" cy="48" r="1.8" fill="#5b9a96"/>`,
+  cafe:`<rect width="100" height="100" fill="#1a212c"/><path d="M38 44h20v10a10 10 0 0 1-20 0z" fill="none" stroke="#e0a951" stroke-width="1.5" opacity=".75"/><path d="M58 46h6a4 4 0 0 1 0 8h-6" fill="none" stroke="#e0a951" stroke-width="1.5" opacity=".75"/><path d="M44 38c0-3 2-4 2-6M52 38c0-3 2-4 2-6" stroke="#c97b5a" stroke-width="1.5" opacity=".7"/>`,
+  wine:`<rect width="100" height="100" fill="#1a212c"/><path d="M42 34h16l-2 14a6 6 0 0 1-12 0z" fill="none" stroke="#e0a951" stroke-width="1.5" opacity=".75"/><path d="M50 54v10M44 64h12" stroke="#e0a951" stroke-width="1.5" opacity=".75"/><path d="M44 42h12" stroke="#c97b5a" stroke-width="3" opacity=".5"/>`,
+};
+function visual(p,cls){
+  const ill=`<svg class="ill" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">${ILL[p.kind]||ILL.dining}</svg>`;
+  const img=p.photo?`<img src="${p.photo}" alt="${p.n}" loading="lazy" onerror="this.style.display='none'">`:'';
+  return `<div class="${cls}">${ill}${img}</div>`;
+}
 
 /* mood -> ranked candidates (by occasion overlap handled in pick) */
 const MOOD = {
@@ -316,6 +342,7 @@ function render(key,altKey){
   const tagHtml=p.tags.map(t=>`<span class="tag">${t}</span>`).join('');
   document.getElementById('reveal').innerHTML=`
     <div class="answer">
+      ${visual(p,'visual')}
       <div class="head">
         <div><div class="pick">your place tonight</div><h3>${p.n}</h3></div>
         <div class="rt">${p.r}★</div>
@@ -349,7 +376,7 @@ document.querySelectorAll('#occasion .chip').forEach(c=>{
 
 /* ---------- PANELS ---------- */
 function rowHtml(key){const p=P[key];return `<div class="row" onclick="openSheet('${key}')">
-  <div class="l"><div class="rn">${p.n}</div><div class="rm">${p.why.split('.')[0]}.</div></div>
+  <div class="lwrap">${visual(p,'thumb')}<div class="l"><div class="rn">${p.n}</div><div class="rm">${p.why.split('.')[0]}.</div></div></div>
   <div class="r"><span class="rr">${p.r}★</span><span class="pin" onclick="event.stopPropagation();window.open('${mapUrl(p)}','_blank')">📍</span></div></div>`;}
 ['cult','fika','wine'].forEach(k=>{document.getElementById('panel-'+k).innerHTML=PANELS[k].map(rowHtml).join('');});
 document.getElementById('panel-events').innerHTML=EVENTS.map(e=>`<a class="evlink" href="${e.u}" target="_blank"><div><div class="et">${e.t}</div><div class="ed">${e.d}</div></div><span class="ego">open ↗</span></a>`).join('');
@@ -366,7 +393,8 @@ document.querySelectorAll('.modecard').forEach(c=>{
 function openSheet(key){
   const p=P[key];
   document.getElementById('sheetinner').innerHTML=`
-    <h3>${p.n}</h3><div class="sr">${p.r}★ · ${p.hours}</div>
+    ${visual(p,'visual')}
+    <h3 style="margin-top:14px">${p.n}</h3><div class="sr">${p.r}★ · ${p.hours}</div>
     <p>${p.why}</p>
     <p><b>Good for</b> ${p.tags.join(' · ')}</p>
     <div class="sheetacts">
